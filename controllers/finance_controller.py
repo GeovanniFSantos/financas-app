@@ -1,7 +1,8 @@
 import hashlib
 import pandas as pd
 from datetime import datetime
-import calendar # Importei para pegar o último dia do mês corretamente
+import calendar 
+import urllib.parse
 from models import database
 
 # --- AUXILIARES ---
@@ -328,3 +329,18 @@ def obter_dados_pizza(username, mes, ano):
     if not df.empty:
         df['total'] = df['total'].astype(float)
     return df
+
+def gerar_link_whatsapp(receita, despesa, saldo, mes_nome, ano):
+    """Gera um link que abre o WhatsApp com emojis que funcionam"""
+    # Usando códigos de emoji que o WhatsApp reconhece bem
+    texto = (
+        f" *RESUMO FINANCEIRO - {mes_nome.upper()}/{ano}*\n\n"
+        f" *Receita Bruta:* R$ {receita:,.2f}\n"
+        f" *Custos/Despesas:* R$ {despesa:,.2f}\n"
+        f"--------------------------\n"
+        f" *LUCRO LÍQUIDO:* R$ {saldo:,.2f}\n\n"
+        f" _Gerado pelo meu App Solução Sob Medida_"
+    )
+    
+    texto_codificado = urllib.parse.quote(texto)
+    return f"https://wa.me/?text={texto_codificado}"

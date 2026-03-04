@@ -31,6 +31,22 @@ def render_dashboard():
     
     st.markdown("---")
 
+    # --- BOTÃO WHATSAPP ---
+    # Usamos os valores 'receita', 'despesa', 'saldo' que já estão calculados na sua tela
+    link_wa = finance_controller.gerar_link_whatsapp(receita, despesa, saldo, sel_mes_nome, sel_ano)
+    
+    st.markdown(
+        f'''
+        <a href="{link_wa}" target="_blank" style="text-decoration: none;">
+            <div style="background-color: #25D366; color: white; padding: 10px 20px; border-radius: 10px; text-align: center; font-weight: bold; cursor: pointer;">
+                🟢 Compartilhar Resumo no WhatsApp
+            </div>
+        </a>
+        ''', 
+        unsafe_allow_html=True
+    )
+    st.write("") # Espaço extra
+
     # --- 4. CARTÕES DE RESUMO (Topo) ---
     c1, c2, c3 = st.columns(3)
     
