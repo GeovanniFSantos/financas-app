@@ -2,7 +2,7 @@ import streamlit as st
 from views import login_view, dashboard_view, veiculos_view, diario_view, extrato_view, perfil_view # <--- IMPORTAR
 
 st.set_page_config(page_title="Finanças App", layout="wide")
-# ... (Seu CSS aqui) ...
+
 
 if 'logado' not in st.session_state: st.session_state['logado'] = False
 
@@ -22,6 +22,27 @@ def main():
             ])
             
             st.markdown("---")
+            st.sidebar.subheader("🚀 Conteúdo e Dicas")
+
+            url_blog = "https://www.solucaosobmedida.com.br/blog/dashboards.html" 
+            st.sidebar.markdown(
+                f'''
+                <a href="{url_blog}" target="_blank" style="text-decoration: none;">
+                    <div style="
+                        background-color: #007BFF; 
+                        color: white; 
+                        padding: 10px; 
+                        border-radius: 8px; 
+                        text-align: center; 
+                        font-weight: bold; 
+                        border: 1px solid #0056b3;">
+                        🌐 Visitar Nosso Blog
+                    </div>
+                </a>
+                ''', 
+                unsafe_allow_html=True
+            )
+            st.sidebar.caption("Saiba mais sobre tecnologia e finanças.")
             if st.button("Sair", key="btn_sair_app"):
                 st.session_state['logado'] = False
                 st.rerun()
