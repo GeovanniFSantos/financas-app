@@ -14,18 +14,20 @@ def render_login():
         if st.session_state['menu_atual'] == 'login':
             with st.container(border=True):
                 st.subheader("Entrar")
-                user = st.text_input("Usuário ou E-mail")
+                user_input = st.text_input("Usuário ou E-mail")
                 password = st.text_input("Senha", type="password")
                 
                 if st.button("Entrar"):
-                    nome = finance_controller.realizar_login(user, password)
-                    if nome:
+                    # Controller retorna (username, nome) se der certo
+                    user_real, nome_real = finance_controller.realizar_login(user_input, password)
+                    
+                    if user_real:
                         st.session_state['logado'] = True
-                        st.session_state['usuario_atual'] = user.strip().lower()
-                        st.session_state['nome_usuario'] = nome
+                        st.session_state['usuario_atual'] = user_real
+                        st.session_state['nome_usuario'] = nome_real
                         st.rerun()
                     else:
-                        st.error("Dados incorretos.")
+                        st.error("Dados incorretos. (Verifique se a senha no Excel está criptografada)")
                 
                 st.markdown("---")
                 if st.button("Criar Conta"):

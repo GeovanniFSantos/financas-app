@@ -1,15 +1,8 @@
 import streamlit as st
-# IMPORTAR O NOVO EXTRATO_VIEW
-from views import login_view, dashboard_view, veiculos_view, diario_view, extrato_view 
+from views import login_view, dashboard_view, veiculos_view, diario_view, extrato_view, perfil_view # <--- IMPORTAR
 
 st.set_page_config(page_title="Finanças App", layout="wide")
-st.markdown("""
-<style>
-    .stButton>button {width: 100%; border-radius: 8px; height: 3em; background-color: #FFC107; color: black; border: none; font-weight: bold;}
-    .stButton>button:hover {background-color: #ffca2c; color: black;}
-    h1 {text-align: center;}
-</style>
-""", unsafe_allow_html=True)
+# ... (Seu CSS aqui) ...
 
 if 'logado' not in st.session_state: st.session_state['logado'] = False
 
@@ -20,12 +13,12 @@ def main():
         with st.sidebar:
             st.title(f"Olá, {st.session_state['nome_usuario']}")
             
-            # NOVO MENU
             pagina = st.radio("Menu", [
                 "📊 Financeiro", 
-                "📄 Extrato",         # <--- NOVO
+                "📄 Extrato",
                 "📅 Diário de Bordo", 
-                "🏍️ Veículos"
+                "🏍️ Veículos",
+                "👤 Meu Perfil"  # <--- NOVA OPÇÃO
             ])
             
             st.markdown("---")
@@ -33,15 +26,16 @@ def main():
                 st.session_state['logado'] = False
                 st.rerun()
         
-        # ROTEAMENTO
         if pagina == "📊 Financeiro":
             dashboard_view.render_dashboard()
-        elif pagina == "📄 Extrato":      # <--- ROTA NOVA
+        elif pagina == "📄 Extrato":
             extrato_view.render_extrato()
         elif pagina == "🏍️ Veículos":
             veiculos_view.render_veiculos()
         elif pagina == "📅 Diário de Bordo":
             diario_view.render_diario()
+        elif pagina == "👤 Meu Perfil": # <--- ROTA
+            perfil_view.render_perfil()
 
 if __name__ == "__main__":
     main()
