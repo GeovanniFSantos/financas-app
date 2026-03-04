@@ -2,10 +2,11 @@ import mysql.connector
 import pandas as pd
 import streamlit as st
 
+# Função para conectar (sem cache, pois a conexão expira rápido)
 def get_connection():
-    """Conecta ao MySQL usando as credenciais do secrets.toml"""
     try:
-        # Tenta pegar dos secrets (funciona local e no deploy)
+        # Tenta pegar dos secrets (Streamlit Cloud ou local)
+        # Se der erro de chave, verifique se o arquivo .streamlit/secrets.toml existe
         db_config = st.secrets["mysql"]
         
         conn = mysql.connector.connect(
@@ -20,8 +21,29 @@ def get_connection():
         st.error(f"Erro ao conectar no MySQL: {e}")
         return None
 
+# --- CACHE DE DADOS (VELOCIDADE) ---
+# ttl=300 significa: "Lembre disso por 5 minutos"
+@st.cache_data(ttl=300, show_spinner=False)
+def carregar_query(query, valores=None):
+    """Executa SELECT e retorna um DataFrame (COM CACHE)"""
+    conn = get_connection()
+    if not conn: return pd.DataFrame()
+    
+    try:
+        # Se valores for uma lista, converte para tupla (o cache precisa disso)
+        if isinstance(valores, list):
+            valores = tuple(valores)
+            
+        df = pd.read_sql(query, conn, params=valores)
+        return df
+    except Exception as e:
+        print(f"Erro SQL Consultar: {e}") 
+        return pd.DataFrame()
+    finally:
+        if conn: conn.close()
+
 def executar_query(query, valores=None):
-    """Executa INSERT, UPDATE, DELETE"""
+    """Executa INSERT, UPDATE, DELETE e LIMPA O CACHE"""
     conn = get_connection()
     if not conn: return False, "Sem conexão"
     
@@ -29,48 +51,26 @@ def executar_query(query, valores=None):
         cursor = conn.cursor()
         cursor.execute(query, valores)
         conn.commit()
+        
+        # --- LIMPEZA DE CACHE ---
+        # Se salvamos algo novo, limpamos a memória para o usuário ver o dado atualizado
+        st.cache_data.clear()
+        
         return True, "Sucesso"
     except Exception as e:
+        print(f"Erro SQL Executar: {e}")
         return False, str(e)
     finally:
         if conn: conn.close()
 
-def carregar_query(query, valores=None):
-    """Executa SELECT e retorna um DataFrame do Pandas"""
-    conn = get_connection()
-    if not conn: return pd.DataFrame()
-    
-    try:
-        # O Pandas já lê direto do banco!
-        df = pd.read_sql(query, conn, params=valores)
-        return df
-    except Exception as e:
-        st.error(f"Erro SQL: {e}")
-        return pd.DataFrame()
-    finally:
-        if conn: conn.close()
-
-# --- FUNÇÕES ESPECÍFICAS (MANTENDO A COMPATIBILIDADE) ---
+# --- FUNÇÕES AUXILIARES ---
 
 def buscar_usuario(username_ou_email):
     query = "SELECT * FROM usuarios WHERE username = %s OR email = %s"
     return carregar_query(query, (username_ou_email, username_ou_email))
 
-def buscar_usuario_por_id(user_id):
-    query = "SELECT * FROM usuarios WHERE id = %s"
-    return carregar_query(query, (user_id,))
-
-# --- FUNÇÃO AUXILIAR PARA PEGAR ID PELO NOME ---
 def get_user_id(username):
     df = buscar_usuario(username)
     if not df.empty:
         return int(df.iloc[0]['id'])
     return None
-
-def salvar_no_excel(dataframe, sheet_name):
-    """
-    OBSOLETO: Esta função existia no Excel. 
-    Agora usamos INSERTs diretos no controller.
-    Mantida vazia apenas para não quebrar imports antigos se houver.
-    """
-    pass

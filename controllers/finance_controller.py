@@ -40,14 +40,17 @@ def cadastrar_usuario(username, nome, email, contato, senha):
     """
     return database.executar_query(query, (user_clean, nome, email, contato, senha_hash))
 
-# --- PERFIL ---
 def obter_dados_usuario(username):
     user = database.buscar_usuario(username)
     return user.iloc[0] if not user.empty else None
 
-def atualizar_perfil(username, novo_nome, novo_email, novo_contato):
-    query = "UPDATE usuarios SET nome=%s, email=%s, contato=%s WHERE username=%s"
-    return database.executar_query(query, (novo_nome, novo_email, novo_contato, username))
+def atualizar_perfil(username, novo_nome, novo_email, novo_contato, nova_data_nascimento):
+    query = """
+    UPDATE usuarios 
+    SET nome=%s, email=%s, contato=%s, data_nascimento=%s 
+    WHERE username=%s
+    """
+    return database.executar_query(query, (novo_nome, novo_email, novo_contato, nova_data_nascimento, username))
 
 def alterar_senha(username, nova_senha):
     senha_hash = hashlib.sha256(nova_senha.encode()).hexdigest()
