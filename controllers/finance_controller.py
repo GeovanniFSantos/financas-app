@@ -1,9 +1,11 @@
 import hashlib
 import pandas as pd
 from datetime import datetime
+from datetime import date
 import calendar 
 import urllib.parse
 from models import database
+
 
 # --- AUXILIARES ---
 def _formatar_data_visual(data):
@@ -20,11 +22,23 @@ def realizar_login(login_input, senha):
     user_data = database.buscar_usuario(login_limpo)
     
     if not user_data.empty:
+        usuario = user_data.iloc[0]
         senha_hash = hashlib.sha256(senha.encode()).hexdigest()
-        senha_banco = str(user_data.iloc[0]['senha'])
-        if senha_banco == senha_hash:
-            return user_data.iloc[0]['username'], user_data.iloc[0]['nome']
-    return None, None
+        
+        if str(usuario['senha']) == senha_hash:
+            # 1. VERIFICA STATUS MANUAL (SUSPENSO)
+            if usuario['status_conta'] == 'suspenso':
+                return "suspenso", None, None
+            
+            # 2. VERIFICA DATA DE EXPIRAÇÃO (BLOQUEIO AUTOMÁTICO)
+            if usuario['data_expiracao']:
+                if date.today() > usuario['data_expiracao']:
+                    return "expirado", None, None
+            
+            return usuario['username'], usuario['nome'], usuario['nivel_acesso']
+            
+    return None, None, None
+
 
 def cadastrar_usuario(username, nome, email, contato, senha):
     user_clean = username.strip().lower()

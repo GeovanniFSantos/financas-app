@@ -18,19 +18,24 @@ def render_login():
                 password = st.text_input("Senha", type="password")
                 
                 if st.button("Entrar"):
-                    # Controller retorna (username, nome) se der certo
-                    user_real, nome_real = finance_controller.realizar_login(user_input, password)
-                    
-                    if user_real:
+                    res_login = finance_controller.realizar_login(user_input, password)
+                    user_real, nome_real, nivel_real = res_login
+
+                    if user_real == "suspenso":
+                        st.error("❌ Sua conta foi suspensa manualmente pelo Administrador.")
+                    elif user_real == "expirado":
+                        st.warning("⏰ Sua assinatura expirou! Entre em contato com a Solução Sob Medida para renovar.")
+                    elif user_real:
                         st.session_state['logado'] = True
                         st.session_state['usuario_atual'] = user_real
                         st.session_state['nome_usuario'] = nome_real
+                        st.session_state['nivel_acesso'] = nivel_real
                         st.rerun()
                     else:
-                        st.error("Dados incorretos. (Verifique se a senha no Excel está criptografada)")
+                        st.error("Dados incorretos. Verifique sua senha ou e-mail.")
                 
                 st.markdown("---")
-                if st.button("Criar Conta"):
+                if st.button("Criar Sua Conta"):
                     st.session_state['menu_atual'] = 'cadastro'
                     st.rerun()
 
