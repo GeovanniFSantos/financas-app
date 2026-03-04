@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from controllers import finance_controller
+from views import graficos_view
 
 def render_dashboard():
     # --- 1. INICIALIZAÇÃO DE VARIÁVEIS DE ESTADO (Para edição funcionar) ---
@@ -57,6 +58,28 @@ def render_dashboard():
 
     # --- DETALHE DA FROTA ---
     st.markdown("---")
+
+    st.markdown("### 📊 Análise de Gastos")
+    col_graf1, col_graf2 = st.columns([1.5, 1]) # 1.5 para o gráfico, 1 para uma tabelinha de resumo
+
+    with col_graf1:
+        st.write("**Gastos por Categoria**")
+        df_gastos = finance_controller.obter_dados_pizza(st.session_state['usuario_atual'], sel_mes, sel_ano)
+        graficos_view.exibir_grafico_gastos(df_gastos)
+
+    with col_graf2:
+        st.write("**Resumo de Saídas**")
+        if not df_gastos.empty:
+            # Ordena do maior gasto para o menor
+            df_resumo = df_gastos.sort_values(by='total', ascending=False)
+            # Formata como moeda para a tabela
+            df_resumo['total'] = df_resumo['total'].apply(lambda x: f"R$ {x:,.2f}")
+            st.table(df_resumo.set_index('categoria'))
+        else:
+            st.caption("Nada para listar.")
+    
+    st.markdown("---")
+
     with st.expander("🚙 Detalhes da Frota (Custos e Lucros)", expanded=False):
         st.info(f"Deste saldo total, **R$ {lucro_veiculo:,.2f}** vieram do lucro líquido das entregas/viagens.")
         
@@ -186,7 +209,7 @@ def render_dashboard():
                         ec_nome = st.text_input("Nome", value=conta_atual['nome'])
                         ec_val = st.number_input("Valor", value=float(conta_atual['valor_previsto']))
                         ec_dia = st.number_input("Dia Vencimento", value=int(conta_atual['dia_vencimento']), min_value=1, max_value=31)
-                        ec_cat = st.selectbox("Categoria", ["Casa", "Serviços", "Pessoal"], index=0) # Simplificado index
+                        ec_cat = st.selectbox("Categoria", ["Casa", "Serviços", "Pessoal", "Cartão de Crédito", "Emprestimo", "Outros"], index=0) # Simplificado index
                         
                         col_cs, col_cc = st.columns(2)
                         if col_cs.button("Salvar Conta"):
@@ -201,7 +224,7 @@ def render_dashboard():
                 cf_nome = st.text_input("Nome")
                 cf_val = st.number_input("Valor Previsto", min_value=0.0)
                 cf_dia = st.number_input("Dia Vencimento", 1, 31, 10)
-                cf_cat = st.selectbox("Categoria", ["Casa", "Serviços", "Pessoal", "Cartão de Crédito"])
+                cf_cat = st.selectbox("Categoria", ["Casa", "Serviços", "Pessoal", "Cartão de Crédito", "Emprestimo", "Outros"])
                 if st.button("Salvar CF"):
                     finance_controller.salvar_conta_fixa(st.session_state['usuario_atual'], cf_nome, cf_val, cf_dia, cf_cat)
                     st.rerun()

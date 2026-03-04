@@ -72,7 +72,7 @@ def render_extrato():
             
             c3, c4 = st.columns(2)
             e_cat = c3.selectbox("Categoria", ["Salário", "Extra", "Investimento", "Moradia", "Alimentação", "Transporte", "Lazer", "Contas", "Outros"], index=0, key="ed_cat")
-            e_metodo = c4.selectbox("Pagamento", ["Pix", "Cartão", "Dinheiro", "Boleto", "Conta Fixa", "Transferência"], index=0, key="ed_met")
+            e_metodo = c4.selectbox("Pagamento", ["Pix", "Cartão de Crédito", "Dinheiro", "Boleto", "Conta Fixa", "Transferência"], index=0, key="ed_met")
             
             e_desc = st.text_input("Descrição", value=t_edit['descricao'], key="ed_desc")
             

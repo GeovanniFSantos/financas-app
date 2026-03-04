@@ -311,3 +311,20 @@ def aplicar_rendimento_meta(id_meta):
         return True, f"Rendimento de R$ {ganho:.2f} aplicado com sucesso!"
         
     return False, "Sem taxa de rendimento configurada."
+
+def obter_dados_pizza(username, mes, ano):
+    """Retorna os dados agrupados para o gráfico de pizza"""
+    user_id = database.get_user_id(username)
+    if not user_id: return pd.DataFrame()
+
+    query = """
+        SELECT categoria, SUM(valor) as total 
+        FROM transacoes 
+        WHERE user_id = %s AND tipo = 'Despesa' 
+        AND MONTH(data) = %s AND YEAR(data) = %s
+        GROUP BY categoria
+    """
+    df = database.carregar_query(query, (user_id, mes, ano))
+    if not df.empty:
+        df['total'] = df['total'].astype(float)
+    return df
