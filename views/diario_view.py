@@ -52,7 +52,6 @@ def render_diario():
                 st.session_state['editando_viagem_id'] = None
                 st.rerun()
 
-    # --- MODO NOVO LANÇAMENTO ---
     else:
         with st.expander("📝 Novo Lançamento", expanded=False):
             # ... (Código de novo lançamento igual ao anterior) ...

@@ -1,7 +1,7 @@
 import streamlit as st
 import base64
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 from controllers import finance_controller
 
 def render_perfil():
@@ -43,12 +43,33 @@ def render_perfil():
                 email = st.text_input("E-mail", value=str(dados.get('email') or ''))
                 contato = st.text_input("Celular/WhatsApp", value=str(dados.get('contato') or ''))
                 
-                # --- NOVO CAMPO: DATA NASCIMENTO ---
+                # --- CORREÇÃO DA DATA AQUI ---
                 data_bd = dados.get('data_nascimento')
-                # Tratamento para não quebrar se vier vazio ou None do banco
-                valor_data = pd.to_datetime(data_bd).date() if pd.notnull(data_bd) else None
                 
-                nascimento = st.date_input("Data de Nascimento", value=valor_data, format="DD/MM/YYYY")
+                # 1. Define limites
+                min_data = date(1900, 1, 1)
+                max_data = datetime.now().date()
+
+                # 2. Define o valor padrão SEGURO
+                if pd.notnull(data_bd) and str(data_bd).strip() != "":
+                    try:
+                        valor_data = pd.to_datetime(data_bd).date()
+                    except:
+                        valor_data = date(1990, 1, 1)
+                else:
+                    valor_data = date(1990, 1, 1)
+
+                # 3. Garante que o valor está dentro dos limites para não dar erro
+                if valor_data < min_data: valor_data = min_data
+                if valor_data > max_data: valor_data = max_data
+
+                nascimento = st.date_input(
+                    "Data de Nascimento", 
+                    value=valor_data, 
+                    min_value=min_data, 
+                    max_value=max_data, 
+                    format="DD/MM/YYYY"
+                )
                 
                 if st.form_submit_button("💾 Salvar Alterações"):
                     finance_controller.atualizar_perfil(st.session_state['usuario_atual'], nome, email, contato, nascimento)
@@ -56,7 +77,6 @@ def render_perfil():
                     st.success("Perfil atualizado!")
                     st.rerun()
 
-        # ABA 2: SEGURANÇA
         with tab2:
             with st.form("form_senha_perfil"):
                 st.warning("Ao mudar a senha, você será deslogado.")
